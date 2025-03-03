@@ -1,9 +1,7 @@
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { useState, useRef } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import ConfettiCannon from 'react-native-confetti-cannon';
-import { GridContainer } from '@/components/GridContainer';
-import { GameModal } from '@/components/GameModal';
 
 export default function HomeScreen() {
   const [player, setPlayer] = useState<'X' | 'O'>(Math.random() < 0.5 ? 'X' : 'O');
@@ -68,10 +66,19 @@ export default function HomeScreen() {
         <Text className="text-2xl text-purple-400 font-bold ml-2">{player}</Text>
       </View>
 
-      <GridContainer
-        board={board}
-        handlePress={handlePress}
-      />
+      <View className="w-72 h-72 flex flex-wrap border-4 border-gray-700 bg-gray-900/50 rounded-xl overflow-hidden shadow-lg shadow-purple-900">
+        {board.map((cell, index) => {
+          return (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handlePress(index)}
+              className="w-1/3 h-1/3 border border-gray-700 flex items-center justify-center active:bg-purple-600/20"
+            >
+              <Text className="text-6xl text-gray-300 font-bold">{cell}</Text>
+            </TouchableOpacity>
+          )
+        })}
+      </View>
 
       {winner && winner !== 'Draw' && (
         <ConfettiCannon
@@ -82,7 +89,19 @@ export default function HomeScreen() {
           ref={confettiRef}
         />
       )}
-      <GameModal visible={isModalVisible} winner={winner} resetGame={resetGame} />
+
+      <Modal visible={isModalVisible} transparent animationType="fade">
+        <View className="flex-1 items-center justify-center bg-black/70">
+          <View className="w-80 p-6 bg-gray-800 rounded-lg items-center">
+            <Text className="text-2xl text-white font-bold">
+              {winner === 'Draw' ? 'It\'s a Draw! 🤝' : `Winner: ${winner} 🎉`}
+            </Text>
+            <TouchableOpacity onPress={resetGame} className="mt-5 px-6 py-3 bg-purple-500 rounded-lg">
+              <Text className="text-white text-lg font-semibold">Play Again</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
