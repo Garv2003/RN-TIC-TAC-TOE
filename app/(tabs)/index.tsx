@@ -13,22 +13,25 @@ export default function HomeScreen() {
   const handlePress = (index: number) => {
     if (board[index] || winner) return;
 
-    const newBoard = [...board];
-    newBoard[index] = player;
-    setBoard(newBoard);
+    setBoard((prevBoard) => {
+      const newBoard = [...prevBoard];
+      newBoard[index] = player;
+      const winningPlayer = checkWin(newBoard);
+      if (winningPlayer) {
+        setWinner(winningPlayer);
+        setModalVisible(true);
+        setTimeout(() => confettiRef.current?.start(), 300);
+      } else if (newBoard.every(cell => cell !== '')) {
+        setWinner('Draw');
+        setModalVisible(true);
+      } else {
+        setPlayer((prev) => (prev === 'X' ? 'O' : 'X'));
+      }
 
-    const winningPlayer = checkWin(newBoard);
-    if (winningPlayer) {
-      setWinner(winningPlayer);
-      setModalVisible(true);
-      confettiRef.current?.start();
-    } else if (newBoard.every(cell => cell !== '')) {
-      setWinner('Draw');
-      setModalVisible(true);
-    } else {
-      setPlayer(player === 'X' ? 'O' : 'X');
-    }
+      return newBoard;
+    });
   };
+
 
   const checkWin = (board: string[]) => {
     const winPatterns = [
@@ -80,15 +83,13 @@ export default function HomeScreen() {
         })}
       </View>
 
-      {winner && winner !== 'Draw' && (
-        <ConfettiCannon
-          count={100}
-          origin={{ x: 180, y: 0 }}
-          autoStart={false}
-          fadeOut={true}
-          ref={confettiRef}
-        />
-      )}
+      <ConfettiCannon
+        count={100}
+        origin={{ x: 180, y: 0 }}
+        fadeOut={true}
+        autoStart={false}
+        ref={confettiRef}
+      />
 
       <Modal visible={isModalVisible} transparent animationType="fade">
         <View className="flex-1 items-center justify-center bg-black/70">
